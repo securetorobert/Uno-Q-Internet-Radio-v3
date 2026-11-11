@@ -1,0 +1,12 @@
+name: UNO Q Internet Radio v3
+description: "Internet radio with Gemma 3 1B on the board: plain-language commands, tidy song titles and a daily listening summary"
+ports: []
+bricks:
+- arduino:web_ui: {}
+- arduino:dbstorage_sqlstore: {}
+- arduino:llm:
+    model: llamacpp:gemma-3-1b-it-Q4_0
+    variables:
+      LLAMA_ARG_CTX_SIZE: "4096"
+      LLAMA_ARG_THREADS: "3"
+icon: 📻

@@ -1,0 +1,208 @@
+<!doctype html>
+<!-- UNO Q Internet Radio v3 - web UI. SPDX-License-Identifier: MIT -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#16130f">
+  <title>UNO Q Radio</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2316130f'/%3E%3Cg fill='%23ff8a3d'%3E%3Ccircle cx='9' cy='11' r='2'/%3E%3Ccircle cx='16' cy='11' r='2'/%3E%3Ccircle cx='23' cy='11' r='2'/%3E%3Ccircle cx='9' cy='18' r='2'/%3E%3Ccircle cx='16' cy='18' r='2'/%3E%3Ccircle cx='9' cy='25' r='2'/%3E%3C/g%3E%3C/svg%3E">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span>UNO&nbsp;Q&nbsp;Radio</span>
+    </div>
+    <div class="top-right">
+      <button class="ai-chip" id="ai-chip" type="button" title="Gemma 3 1B status - open settings">
+        <span class="ai-dot"></span><span id="ai-text">Gemma</span>
+      </button>
+      <div class="link" id="link" title="Connection to the radio">
+        <span class="link-dot"></span><span id="link-text">connecting</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ================= NOW PLAYING ================= -->
+    <section class="deck" aria-label="Now playing">
+      <div class="display">
+        <div class="display-top">
+          <span class="chan" id="np-chan">--</span>
+          <span class="state" id="np-state">idle</span>
+          <span class="elapsed" id="np-elapsed"></span>
+        </div>
+        <div class="station-row">
+          <img class="logo" id="np-logo" alt="" hidden>
+          <div class="logo logo-fallback" id="np-logo-fb" aria-hidden="true">&#9834;</div>
+          <div class="station-text">
+            <h1 id="np-station">No station</h1>
+            <p class="meta" id="np-meta"></p>
+          </div>
+        </div>
+        <div class="song" aria-live="polite">
+          <div class="song-label">Now playing <span class="kind" id="np-kind" hidden></span></div>
+          <div class="song-artist" id="np-artist" hidden></div>
+          <div class="song-title" id="np-title">—</div>
+          <div class="song-sub" id="np-title-sub"></div>
+        </div>
+        <div class="tech" id="np-tech"></div>
+      </div>
+
+      <div class="controls">
+        <button class="ctl" id="btn-prev" aria-label="Previous station">
+          <svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+        <button class="ctl ctl-main" id="btn-toggle" aria-label="Play or pause">
+          <svg id="ico-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
+          <svg id="ico-pause" viewBox="0 0 24 24" hidden><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg></button>
+        <button class="ctl" id="btn-next" aria-label="Next station">
+          <svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+      </div>
+
+      <div class="volume">
+        <button class="mute" id="btn-mute" aria-label="Mute">
+          <svg id="ico-vol" viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4zM16 8.5a4.5 4.5 0 0 1 0 7M18.5 6a8 8 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <svg id="ico-muted" viewBox="0 0 24 24" hidden><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <input type="range" id="vol" min="0" max="100" step="1" value="60" aria-label="Volume">
+        <output id="vol-out">60</output>
+      </div>
+    </section>
+
+    <!-- ================= ASK THE RADIO (v3) ================= -->
+    <section class="ask" aria-label="Ask the radio">
+      <form class="ask-form" id="ask-form">
+        <input id="ask-input" maxlength="200" autocomplete="off" enterkeyhint="send"
+               placeholder="Ask the radio… e.g. play something relaxing" aria-label="Ask the radio">
+        <button class="btn btn-accent" id="ask-btn">Ask</button>
+      </form>
+      <div class="chips" id="ask-chips">
+        <button type="button" class="chip">Something relaxing</button>
+        <button type="button" class="chip">Play some news</button>
+        <button type="button" class="chip">Turn it down a bit</button>
+        <button type="button" class="chip">Next station</button>
+      </div>
+      <p class="ask-reply" id="ask-reply" aria-live="polite" hidden>
+        <span id="ask-reply-text"></span> <span class="ask-src" id="ask-src"></span>
+      </p>
+    </section>
+
+    <!-- ================= TABS ================= -->
+    <nav class="tabs" role="tablist">
+      <button role="tab" class="tab" data-tab="stations" aria-selected="true">Stations <span class="count" id="st-count"></span></button>
+      <button role="tab" class="tab" data-tab="add" aria-selected="false">Add station</button>
+      <button role="tab" class="tab" data-tab="history" aria-selected="false">History</button>
+      <button role="tab" class="tab" data-tab="insights" aria-selected="false">Insights</button>
+    </nav>
+
+    <section class="panel" id="tab-stations" role="tabpanel">
+      <ol class="stations" id="station-list"></ol>
+      <p class="empty" id="station-empty" hidden>No stations yet. Use <b>Add station</b> to search the directory or paste a stream URL.</p>
+    </section>
+
+    <section class="panel" id="tab-add" role="tabpanel" hidden>
+      <h2>Search the Radio Browser directory</h2>
+      <form class="search" id="search-form">
+        <input id="search-q" placeholder="Station name, e.g. Cool FM" required minlength="2">
+        <input id="search-cc" placeholder="Country (NG)" maxlength="2" class="cc">
+        <button class="btn">Search</button>
+      </form>
+      <ul class="results" id="search-results"></ul>
+
+      <h2>Or add a stream by URL</h2>
+      <form class="form" id="add-form">
+        <label>Name<input name="name" required maxlength="120"></label>
+        <label>Stream URL<input name="url" type="url" placeholder="https://…/stream.mp3"></label>
+        <label>Genre<input name="genre" maxlength="60"></label>
+        <label>Country<input name="country" maxlength="2" placeholder="NG"></label>
+        <details>
+          <summary>Fallback search &amp; extras</summary>
+          <label>Directory search name<input name="rb_search" maxlength="120"></label>
+          <label>Directory country code<input name="rb_countrycode" maxlength="2"></label>
+          <label>Logo URL<input name="logo" type="url"></label>
+          <label>Homepage<input name="homepage" type="url"></label>
+        </details>
+        <div class="form-actions"><button class="btn btn-accent">Add station</button></div>
+      </form>
+    </section>
+
+    <section class="panel" id="tab-history" role="tabpanel" hidden>
+      <div class="history-head">
+        <h2>Recently played songs</h2>
+        <button class="btn btn-ghost" id="btn-clear-history">Clear</button>
+      </div>
+      <ol class="history" id="history-list"></ol>
+      <p class="empty" id="history-empty">Song titles appear here when a station sends them.</p>
+    </section>
+
+    <section class="panel" id="tab-insights" role="tabpanel" hidden>
+      <div class="days" id="days" role="group" aria-label="Choose a day"></div>
+
+      <div class="tiles">
+        <div class="tile"><div class="tile-label">Listening</div><div class="tile-value" id="t-total">–</div></div>
+        <div class="tile"><div class="tile-label">Stations</div><div class="tile-value" id="t-stations">–</div></div>
+        <div class="tile"><div class="tile-label">Songs</div><div class="tile-value" id="t-songs">–</div></div>
+        <div class="tile"><div class="tile-label">Busiest</div><div class="tile-value" id="t-busiest">–</div></div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-head">
+          <h2>Summary</h2>
+          <button class="btn btn-sm" id="btn-summary" type="button">Write summary</button>
+        </div>
+        <p class="summary-text" id="summary-text">No summary yet.</p>
+        <p class="hint" id="summary-meta"></p>
+      </div>
+
+      <h2>Time by station</h2>
+      <ul class="bars" id="bars-stations"></ul>
+      <h2>Time of day</h2>
+      <ul class="bars" id="bars-parts"></ul>
+      <h2>Most played artists</h2>
+      <ol class="artists" id="artists"></ol>
+      <p class="empty" id="artists-empty" hidden>No songs with artist names recorded on this day.</p>
+
+      <h2 id="ai-settings">Gemma 3 1B</h2>
+      <p class="hint" id="ai-status"></p>
+      <form class="form toggles" id="ai-form">
+        <label class="check"><input type="checkbox" name="ai_enabled"> Use Gemma on this radio</label>
+        <label class="check"><input type="checkbox" name="ai_commands"> Understand requests in “Ask the radio”</label>
+        <label class="check"><input type="checkbox" name="ai_titles"> Tidy messy song titles</label>
+        <label class="check"><input type="checkbox" name="ai_summary_auto"> Write a summary every day at
+          <input type="time" name="ai_summary_time" class="time"></label>
+      </form>
+    </section>
+
+  </main>
+
+  <!-- ================= EDIT DIALOG ================= -->
+  <dialog id="edit-dialog">
+    <form class="form" id="edit-form" method="dialog">
+      <h2>Edit station</h2>
+      <label>Name<input name="name" required maxlength="120"></label>
+      <label>Stream URL<input name="url" type="url"></label>
+      <label>Directory search name<input name="rb_search" maxlength="120"></label>
+      <label>Directory country code<input name="rb_countrycode" maxlength="2"></label>
+      <label>Genre<input name="genre" maxlength="60"></label>
+      <label>Country<input name="country" maxlength="2"></label>
+      <label>Logo URL<input name="logo" type="url"></label>
+      <label>Homepage<input name="homepage" type="url"></label>
+      <label class="check"><input type="checkbox" name="enabled"> Enabled (shown on the radio)</label>
+      <p class="hint" id="edit-resolved"></p>
+      <div class="form-actions">
+        <button class="btn btn-danger" value="delete" id="edit-delete" type="button">Delete</button>
+        <span class="spacer"></span>
+        <button class="btn btn-ghost" value="cancel" formnovalidate>Cancel</button>
+        <button class="btn btn-accent" value="save">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script src="libs/socket.io.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

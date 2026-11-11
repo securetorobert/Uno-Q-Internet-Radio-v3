@@ -1,0 +1,10 @@
+# Extra Python packages installed by App Lab into the app's virtual environment.
+# PyAV bundles its own FFmpeg build (MP3, AAC, OGG and HLS decoding);
+# prebuilt aarch64 wheels are on PyPI, so nothing is compiled on the board.
+av
+numpy
+# Not listed on purpose:
+#   pyalsaaudio  - already part of the App Lab runtime (used by its Speaker peripheral)
+#   fastapi etc. - installed with the arduino:web_ui brick
+#   sqlite3      - part of the Python standard library (arduino:dbstorage_sqlstore)
+#   langchain, openai - installed with the arduino:llm brick (Gemma 3 1B client)
